@@ -32,3 +32,6 @@ token.pickle
 
 # Testing
 .coverage
+
+# Legacy source (pre-Electron)
+legacy_src/
