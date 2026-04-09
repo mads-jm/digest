@@ -1,122 +1,116 @@
-# EmailEssence
+# Digest
 
-An intelligent email companion designed to enhance productivity through AI-powered email management and summarization.
+A local-first Electron desktop app for AI-powered email management and summarization.
+
+Forked from [EmailEssence](https://github.com/EmailEssence/EmailEssence.github.io) — a capstone project by Emma Melkumian, Joseph Madigan, Shayan Shahla, and Ritesh Samal.
 
 ## Overview
 
-EmailEssence is a sophisticated email management solution that leverages artificial intelligence to transform how users interact with their inboxes. By providing intelligent email summarization, clutter-free reading experiences, and smart prioritization, EmailEssence helps users focus on what matters most in their communications.
+Digest takes EmailEssence's proven backend — FastAPI, the summarization pipeline, the repository pattern — and re-homes it as a local-first desktop application. No cloud deployment, no remote database. Your email stays on your machine, summarized by your choice of AI provider.
 
-## Key Features
+## Features
 
-### MVP Features
-- 🔐 Secure OAuth 2.0 authentication with email providers
-- 🤖 AI-powered email summarization
-- 📧 Clean, clutter-free reader view
-- 📱 Responsive web interface
-- ⚡ Real-time email processing
+- Secure OAuth 2.0 authentication with Google
+- AI-powered email summarization with pluggable providers
+- Clean, clutter-free reader view
+- Local-first — all data stored on your machine
+- Tokens secured via OS keychain (Electron `safeStorage`)
 
-### Feature Complete (FC) Features
-- 🎨 Customizable dashboard with modular components
-- 🔍 Advanced keyword analysis and topic identification
-- 🔄 Incremental email fetching for large inboxes
-- 🎯 Smart email prioritization
-- 🛠️ Enhanced user preferences and settings
+## Architecture
 
-### Future Features
-- 💻 Cross-platform desktop support via Electron
+```
+Electron App (app/)
+  ├─ Renderer: React 19 + Vite
+  ├─ Preload: typed IPC bridge (contextBridge)
+  └─ Main Process
+       ├─ IPC handlers
+       ├─ OAuth (Electron-native, loopback redirect)
+       └─ Sidecar manager → FastAPI backend subprocess
+                              ├─ Routers → Services → Repositories
+                              └─ SQLite (aiosqlite)
+```
+
+All renderer-to-backend communication flows through Electron IPC — no direct `fetch()` calls.
 
 ## Technical Stack
 
-### Frontend
-- React - Modern UI framework
-- Vite - Frontend tooling and build server
-- JavaScript - Core language for the frontend
+### Electron App (`app/`)
+- TypeScript — main process, preload, shared types
+- React 19 — renderer UI
+- Vite — renderer dev server and build
+- tsup — main/preload bundling
+- electron-builder — packaging and distribution
 
-### Backend
-- Python - Core backend services
-- FastAPI - High-performance API framework
-- MongoDB - Flexible document database
-- Redis - High-performance caching
-- Flexible AI provider support (OpenAI, Google, OpenRouter)
-
-### Infrastructure
-- OAuth 2.0 - Secure authentication
-- IMAP - Email protocol support
+### Backend (`backend/`)
+- Python 3.12+
+- FastAPI — API framework
+- SQLite via aiosqlite — local database
+- Pluggable AI summarization: local (Ollama, llama.cpp, LM Studio), OpenAI, Google Gemini, OpenRouter
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js (v18 or higher)
 - Python (v3.12 or higher)
-- MongoDB
-- Redis
-- UV Package Manager (for Python dependency management)
+- UV package manager (for Python dependency management)
 
 ### Installation
 
-#### Environment Variables
-Create a `.env` file in the backend directory using `.env.example` as a template:
-
 #### Backend Setup
-We use UV (https://astral.sh/uv) for Python package management. Choose your platform:
 
-##### Windows
+Create a `.env` file in `backend/` using `.env.example` as a template. Then:
+
+**Windows:**
 ```powershell
-# Run the PowerShell setup script
 .\backend\setup.ps1
 ```
 
-##### Linux/macOS
+**Linux/macOS:**
 ```bash
-# Run the bash setup script
 chmod +x backend/setup.sh
 ./backend/setup.sh
 ```
 
-The setup scripts will:
-1. Install UV if not present
-2. Create a virtual environment
-3. Install all development dependencies
-4. Set up environment variables
+The setup scripts install UV, create a virtual environment, and install all dependencies.
 
-#### Frontend Setup
+#### Electron App Setup
 ```bash
-cd frontend
+cd app
 npm install
 ```
 
-## Development
+### Development
 
-### Starting the Backend
 ```bash
-cd backend
+# Start backend (from backend/)
 uvicorn main:app --reload
-```
 
-### Starting the Frontend
-```bash
-cd frontend
+# Start Electron app with hot reload (from app/)
 npm run dev
 ```
 
+### Packaging
+
+```bash
+cd app
+npm run package    # Outputs to app/release/build/
+```
+
+The packaged app bundles the Python backend so end users don't need a separate Python install.
+
 ## Documentation
 
-- [Frontend Documentation](https://react.dev/reference/rules)
-- [Backend Documentation](https://fastapi.tiangolo.com/)
-- [Database Documentation](https://www.mongodb.com/docs/)
-- [Authentication Documentation](https://oauth.net/2/)
+Project documentation lives in `digest - docs/` (an Obsidian vault). Key references:
 
-## Contributing
-
-TODO
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Electron](https://www.electronjs.org/docs)
+- [React 19](https://react.dev/)
+- [aiosqlite](https://aiosqlite.omnilib.dev/)
 
 ## License
 
 TODO
 
-## Authors
+## Origin
 
-- Emma Melkumian
-- Joseph Madigan
-- Shayan Shahla
-- Ritesh Samal
+Digest is a solo continuation of [EmailEssence](https://github.com/EmailEssence/EmailEssence.github.io), carrying the full git history of the original capstone project. The fork inherits the backend engine and places it in a local-first, Electron-native context.
